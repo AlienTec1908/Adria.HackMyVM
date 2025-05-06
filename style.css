@@ -1,0 +1,128 @@
+body {
+    font-family: sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+h1, h2, h3 {
+    color: #222;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Header */
+.report-header {
+    background-color: #0056b3;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Footer */
+.report-footer {
+    background-color: #0056b3;
+    color: #fff;
+    text-align: center;
+    padding: 10px;
+    margin-top: 20px;
+}
+
+/* Abschnitte */
+.report-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.report-section h2 {
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+/* Schwachstellenbewertung */
+.report-vulnerability-assessment {
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.report-vulnerability-assessment h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+/* Code-Darstellung */
+.report-command,
+.report-output {
+    display: block;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-family: monospace;
+    overflow-x: auto;
+    white-space: pre-wrap; /* Für längere Ausgaben */
+}
+
+/* Bewertungszusammenfassung */
+.report-assessment-summary {
+    margin-top: 15px;
+    font-style: italic;
+    color: #555;
+}
+
+.report-assessment-summary ul {
+    list-style-type: disc;
+    padding-left: 20px;
+}
+
+/* Listen */
+ul {
+    padding-left: 20px;
+}
+
+/* Hervorhebungen (optional) */
+b {
+    font-weight: bold;
+}
+
+/* Farben für Risikoeinschätzung (optional) */
+/*  Du könntest diese Klassen verwenden, um die Risikoeinschätzung farblich hervorzuheben. */
+.risk-high {
+    color: red;
+}
+
+.risk-medium {
+    color: orange;
+}
+
+.risk-low {
+    color: green;
+}
+
+/* Responsive Design (optional) */
+@media (max-width: 768px) {
+    .report-section {
+        padding: 15px;
+    }
+
+    .report-command,
+    .report-output {
+        font-size: 0.9em;
+    }
+}
